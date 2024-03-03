@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useRecoilState } from "recoil";
 
 import rootKeyAtom from "$recoil/rootKey";
@@ -26,8 +26,20 @@ const RootKeySelector = () => {
   const [keyOptions, setKeyOptions] = useState<Keys[]>(
     rootTonality === "major" ? MAJOR_KEY_OPTIONS : MINOR_KEY_OPTIONS
   );
+  const [enharmonicInputKey, setEnharmonicInputKey] = useState(rootKey);
+
+  const previousKey = useRef(rootKey);
 
   const enharmonic = getEnharmonic(rootKey);
+
+  // only update for change in key that isn't toggling the enharmonic
+  useEffect(() => {
+    if (previousKey.current !== enharmonic) {
+      setEnharmonicInputKey(rootKey);
+    }
+
+    previousKey.current = rootKey;
+  }, [rootKey]);
 
   useEffect(() => {
     const newKeyOptions =
@@ -85,7 +97,7 @@ const RootKeySelector = () => {
 
       <EnharmonicInputContainer>
         {enharmonic ? (
-          <>
+          <Fragment key={enharmonicInputKey}>
             <input
               id="use-enharmonic"
               defaultChecked={false}
@@ -94,7 +106,7 @@ const RootKeySelector = () => {
               type="checkbox"
             />
             <label htmlFor="use-enharmonic">Use enharmonic</label>
-          </>
+          </Fragment>
         ) : null}
       </EnharmonicInputContainer>
     </Container>
